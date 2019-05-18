@@ -12,6 +12,7 @@ void loop() {
   estado = digitalRead(botao);
   if(estado == HIGH){
     digitalWrite(led, HIGH);
+    //envio dos comandos
     Serial.write(0b00100000);
     Serial.write(0b11111111);
     Serial.write(0b11111111);
