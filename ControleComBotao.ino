@@ -1,3 +1,4 @@
+#include <Arduino.h>
 int botao = 2;
 int led = 8;
 int estado = 0;
