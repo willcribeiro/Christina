@@ -16,8 +16,6 @@ int motor2 = 0b010;
 int motor0 = 0b000;
 //Variavel Global
 int protocolo;
-int leituraProtocolo = 0;
-int leituraMotor = 0;
 int entradaProtocolo = A0;
 int entradaMotor = A1;
 int flag = 0;
@@ -43,6 +41,7 @@ void CM1(int nome,int motor){
 }
 
 void mover(int nome, int motor){
+  Serial.println("Entrei");
   int env,ValueH,ValueL;
   env = CalculoProt(nome,motor);
   Serial.write(env);
@@ -58,28 +57,18 @@ void setup() {
   
 }
 
-void loop() {
-  flag = digitalRead(9);
-  leituraProtocolo = analogRead(entradaProtocolo);
-  leituraMotor = analogRead(entradaMotor);
-
-  if(flag == 1){  //se o controlador estiver enviando comando
-
-    switch(leituraMotor){
-      case 0:
+void funcoes(char leitura){
+ 
+   switch(leitura){
+      case 'M0':
         auxMotor = motor0;
         break;
-      case 1:
+      case 'M1':
         auxMotor = motor1;
         break;
-      case 2:
+      case 'M2':
         auxMotor = motor2;
         break;
-      default:
-        auxProtocolo = 0;
-        break;
-      }
-    switch(leituraProtocolo){
       case 1:
         CM1(QPOS,auxMotor); //vai receber 2 valores 8 bits
         break;
@@ -90,7 +79,7 @@ void loop() {
         auxProtocolo = CHFA;
         break;
       case 4:
-        auxProtocolo = TRVL;
+        mover(TRVL,auxMotor);
         break;
       case 5:
         auxProtocolo = CLRP;
@@ -111,11 +100,27 @@ void loop() {
         auxProtocolo = 0;
         break;
       }
-  
     
-   }
-   else{
-    delay(10);
+    
+}
+
+void ler(){
+  if(Serial.available()>0){
+    Serial.println("entrei");
+    int x;
+    x = Serial.read();
+    funcoes(x);
     }
+}
+
+void loop() {
+  
+  //leituraProtocolo = analogRead(entradaProtocolo);
+  //leituraMotor = analogRead(entradaMotor);
+   ler();
+   delay(1000);
+   ler();
+   delay(1000);
    
+     
 }
