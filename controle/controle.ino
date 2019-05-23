@@ -28,26 +28,67 @@ int CalculoProt(int Nome, int mot ){ //concatenacao de protocolos
   return x;
 }
 
-void CM1(int nome,int motor){
-   int env,ValueH,ValueL;
-   env = CalculoProt(nome,motor);
-   Serial.write(env);
-   delay(10);
-   if (Serial.available() > 0) {
-    ValueH = Serial.read();
-    ValueL = Serial.read();
-
-  }  
+void QPosition(){
+  int valH,valL,env;
+  env = CalculoProt(QPOS,motor0);
+  //ler o valor H e L 
+  
 }
 
-void mover(int nome, int motor){
-  Serial.println("Entrei");
-  int env,ValueH,ValueL;
-  env = CalculoProt(nome,motor);
+void QSpeed(){
+  int valH,valL,env;
+  env = CalculoProt(QSPD,motor0);
+  //ler o valor H e L 
+  
+}
+void CArrival(){
+  int tolerance = 0; // 0<= tolerance <= 255
+  int env,value;
+  env = CalculoProt(QSPD,motor0);
+  Serial.write(env);
+  Serial.write(tolerance);
+  value = Serial.Read();
+}
+
+void travel(){
+  
+  env = CalculoProt(TRVL,motor0);
   Serial.write(env);
   Serial.write(0b11111111);
   Serial.write(0b11111111);
 } 
+
+void Clear(){
+  int env;
+  env = CalculoProt(CLRP,motor0);
+  Serial.write(env);
+}
+void SOrienta(){
+  int env;
+  env = CalculoProt(SREV,motor0);
+  Serial.write(env);
+}
+void TxDelay(){
+  int env,espera =0; // 0=< delay =< 255
+  env = CalculoProt(STXD,motor0);
+  Serial.write(env);
+  Serial.write(espera);
+}
+void SMax(){
+  int speedH = 0,speedlL = 0,env; //0 =< SPEED =< 65535
+  env = CalculoProt(SMAX,motor0);
+  Serial.write(env);
+  Serial.write(speedH);
+  Serial.write(speedL);
+  
+}
+void SpeedRamp(){
+  int rate = 0,env; //1 =< rate =< 255
+  env = CalculoProt(SSRR,motor0);
+  Serial.write(env);
+  Serial.write(rate);
+  
+}
 void setup() {
   Serial.begin(19200);
   pinMode(A0,INPUT);
@@ -57,60 +98,45 @@ void setup() {
   
 }
 
-void funcoes(char leitura){
- 
-   switch(leitura){
-      case 'M0':
-        auxMotor = motor0;
-        break;
-      case 'M1':
-        auxMotor = motor1;
-        break;
-      case 'M2':
-        auxMotor = motor2;
-        break;
-      case 1:
-        CM1(QPOS,auxMotor); //vai receber 2 valores 8 bits
-        break;
-      case 2:
-        auxProtocolo = QSPD;
-        break;
-      case 3:
-        auxProtocolo = CHFA;
-        break;
-      case 4:
-        mover(TRVL,auxMotor);
-        break;
-      case 5:
-        auxProtocolo = CLRP;
-        break;
-      case 6:
-        auxProtocolo = SREV;
-        break;
-      case 7:
-        auxProtocolo = STXD;
-        break;
-      case 8:
-        auxProtocolo = SMAX;
-        break;
-      case 9:
-        auxProtocolo = SSRR;
-        break;
-      default:
-        auxProtocolo = 0;
-        break;
-      }
-    
-    
+void funcoes(String protocolo ){
+
+  if(protocolo == "1"){
+    travel();
+    }
+  
+  else if(protocolo == "2"){
+    mover();
+    }
+   else if(protocolo == "3"){
+   
+    }
+   else if(protocolo == "4"){
+    mover();
+    }
+   else if(protocolo == "5"){
+    mover();
+    }
+   else if(protocolo == "6"){
+    mover();
+    }
+   else if(protocolo == "7"){
+    mover();
+    }
+   else if(protocolo == "8"){
+    mover();
+    }
+   else if(protocolo == "9"){
+    mover();
+    }
 }
 
 void ler(){
   if(Serial.available()>0){
-    Serial.println("entrei");
-    int x;
-    x = Serial.read();
+    String x;
+    x = Serial.readString();
     funcoes(x);
     }
+    return 0;
 }
 
 void loop() {
@@ -118,9 +144,7 @@ void loop() {
   //leituraProtocolo = analogRead(entradaProtocolo);
   //leituraMotor = analogRead(entradaMotor);
    ler();
-   delay(1000);
-   ler();
-   delay(1000);
+  
    
      
 }
