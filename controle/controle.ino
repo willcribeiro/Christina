@@ -47,15 +47,19 @@ void CArrival(){
   env = CalculoProt(QSPD,motor0);
   Serial.write(env);
   Serial.write(tolerance);
-  value = Serial.Read();
+  value = Serial.read();
 }
 
 void travel(){
-  
+  int env;
   env = CalculoProt(TRVL,motor0);
-  Serial.write(env);
+  
+  Serial.write(0b00100001);
+  delay(10);
   Serial.write(0b11111111);
+  delay(10);
   Serial.write(0b11111111);
+  delay(10);
 } 
 
 void Clear(){
@@ -75,7 +79,7 @@ void TxDelay(){
   Serial.write(espera);
 }
 void SMax(){
-  int speedH = 0,speedlL = 0,env; //0 =< SPEED =< 65535
+  int speedH = 0,speedL = 0,env; //0 =< SPEED =< 65535
   env = CalculoProt(SMAX,motor0);
   Serial.write(env);
   Serial.write(speedH);
@@ -94,39 +98,38 @@ void setup() {
   pinMode(A0,INPUT);
   pinMode(A1,INPUT);
   pinMode(9,OUTPUT);
-  protocolo = CalculoProt(TRVL,motor1); //Manda ao contrário 0b0000001 , esse 1 vai primeiro
-  
+ 
 }
 
 void funcoes(String protocolo ){
 
   if(protocolo == "1"){
-    travel();
+    QPosition();
     }
   
   else if(protocolo == "2"){
-    mover();
+    QSpeed();
     }
    else if(protocolo == "3"){
-   
+    CArrival();
     }
    else if(protocolo == "4"){
-    mover();
+    travel();
     }
    else if(protocolo == "5"){
-    mover();
+    Clear();
     }
    else if(protocolo == "6"){
-    mover();
+    SOrienta();
     }
    else if(protocolo == "7"){
-    mover();
+     TxDelay();
     }
    else if(protocolo == "8"){
-    mover();
+    SMax();
     }
    else if(protocolo == "9"){
-    mover();
+    SpeedRamp();
     }
 }
 
