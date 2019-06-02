@@ -8,33 +8,38 @@ void setup() {
 }
 
 void loop() {
-  char x;
+  char x;  
+  
   Serial.println("ENtra ai");
-  if(Serial.available()> 0){
+  while(Serial.available()> 0){
     x = Serial.read();
-    
-    delay(100);
+    Serial.read(); 
     Serial.println(x);
-    if(x == '1'){
-      digitalWrite(X0,LOW);
-      digitalWrite(X1,LOW);
-      digitalWrite(X2,LOW);
-      digitalWrite(X3,HIGH);
-      Serial.println("Entrei");
+    Serial.println("wow");
+    if(x == 'a'){
+      
+      Serial.println("Entrei funcao 1");
       Serial.println("---------x----------x");
       delay(1000);
+     
     }    
-    else{
-      Serial.println(x);
+    else if(x == 'b'){
+      
+      Serial.println("Entrei funcao 2");
+      Serial.println("---------x----------x");
       delay(1000);
-    }
+     
+    }  
+
+    else if(x == 'c'){
+      
+      Serial.println("Entrei funcao 3");
+      Serial.println("---------x----------x");
+      delay(1000);
+     
+    }  
+   
+   
   }
-  else{
-      digitalWrite(X0,LOW);
-      digitalWrite(X1,LOW);
-      digitalWrite(X2,LOW);
-      digitalWrite(X3,LOW);
-      }
-
-
+ 
 }
