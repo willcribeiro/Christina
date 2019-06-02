@@ -16,11 +16,10 @@ int motor2 = 0b010;
 int motor0 = 0b000;
 //Variavel Global
 int protocolo;
-int entradaProtocolo = A0;
-int entradaMotor = A1;
-int flag = 0;
-int auxProtocolo;
-int auxMotor;
+int E0 = 2;
+int E1 = 3;
+int E2 = 4;
+int E3 = 5;
 
 int CalculoProt(int Nome, int mot ){ //concatenacao de protocolos
   int x;
@@ -31,6 +30,7 @@ int CalculoProt(int Nome, int mot ){ //concatenacao de protocolos
 void QPosition(){
   int valH,valL,env;
   env = CalculoProt(QPOS,motor0);
+  digitalWrite(9,HIGH);
   //ler o valor H e L 
   
 }
@@ -47,11 +47,11 @@ void CArrival(){
   env = CalculoProt(QSPD,motor0);
   Serial.write(env);
   Serial.write(tolerance);
-  value = Serial.Read();
+  value = Serial.read();
 }
 
 void travel(){
-  
+  int env;
   env = CalculoProt(TRVL,motor0);
   Serial.write(env);
   Serial.write(0b11111111);
@@ -75,7 +75,7 @@ void TxDelay(){
   Serial.write(espera);
 }
 void SMax(){
-  int speedH = 0,speedlL = 0,env; //0 =< SPEED =< 65535
+  int speedH = 0,speedL = 0,env; //0 =< SPEED =< 65535
   env = CalculoProt(SMAX,motor0);
   Serial.write(env);
   Serial.write(speedH);
@@ -91,60 +91,54 @@ void SpeedRamp(){
 }
 void setup() {
   Serial.begin(19200);
-  pinMode(A0,INPUT);
-  pinMode(A1,INPUT);
-  pinMode(9,OUTPUT);
-  protocolo = CalculoProt(TRVL,motor1); //Manda ao contrário 0b0000001 , esse 1 vai primeiro
-  
+  pinMode((E0,E1,E2,E3),INPUT);
+  pinMode(9,OUTPUT);  
 }
 
-void funcoes(String protocolo ){
+void funcoes(int bit0,int bit1,int bit2,int bit3 ){
 
-  if(protocolo == "1"){
+  if(bit0 == 0 && bit1 == 0 && bit2 ==0 && bit3 == 1){ //0001
+    QPosition();
+    }
+  
+  else if(bit0 == 0 and bit1 == 0 and bit2 == 1 and bit3 == 0){
+    QSpeed();
+    }
+   else if(bit0 == 0 and bit1 == 0 and bit2 == 1 and bit3 == 1){
+    CArrival();
+    }
+   else if(bit0 == 0 and bit1 == 1 and bit2 == 0 and bit3 == 0){
     travel();
     }
-  
-  else if(protocolo == "2"){
-    mover();
+   else if(bit0 == 0 and bit1 == 1 and bit2 == 0 and bit3 == 1){
+    Clear();
     }
-   else if(protocolo == "3"){
-   
+   else if(bit0 == 0 and bit1 == 1 and bit2 == 1 and bit3 == 0){
+    SOrienta();
     }
-   else if(protocolo == "4"){
-    mover();
+   else if(bit0 == 0 and bit1 == 1 and bit2 == 1 and bit3 == 1){
+    TxDelay();
     }
-   else if(protocolo == "5"){
-    mover();
+   else if(bit0 == 1 and bit1 == 0 and bit2 == 0 and bit3 == 0){
+    SMax();
     }
-   else if(protocolo == "6"){
-    mover();
+   else if(bit0 == 1 and bit1 == 0 and bit2 == 0 and bit3 == 1){
+    SpeedRamp();
     }
-   else if(protocolo == "7"){
-    mover();
-    }
-   else if(protocolo == "8"){
-    mover();
-    }
-   else if(protocolo == "9"){
-    mover();
-    }
-}
-
-void ler(){
-  if(Serial.available()>0){
-    String x;
-    x = Serial.readString();
-    funcoes(x);
-    }
-    return 0;
 }
 
 void loop() {
-  
-  //leituraProtocolo = analogRead(entradaProtocolo);
-  //leituraMotor = analogRead(entradaMotor);
-   ler();
-  
+  int a,b,c,d;
+ a = digitalRead(E0);
+ b = digitalRead(E1);
+ c = digitalRead(E2);
+ d = digitalRead(E3);
+ Serial.println(a);
+ Serial.println(b);
+ Serial.println(c);
+ Serial.println(d);
+ delay(1000);
+ funcoes(a,b,c,d);
    
      
 }
