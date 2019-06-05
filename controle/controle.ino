@@ -30,7 +30,7 @@ int CalculoProt(int Nome, int mot ){ //concatenacao de protocolos
 void QPosition(){
   int valH,valL,env;
   env = CalculoProt(QPOS,motor0);
-  digitalWrite(9,HIGH);
+  Serial.println("Entrei em 1");
   //ler o valor H e L 
   
 }
@@ -38,6 +38,7 @@ void QPosition(){
 void QSpeed(){
   int valH,valL,env;
   env = CalculoProt(QSPD,motor0);
+  Serial.println("Entrei em 2");
   //ler o valor H e L 
   
 }
@@ -48,6 +49,7 @@ void CArrival(){
   Serial.write(env);
   Serial.write(tolerance);
   value = Serial.read();
+  Serial.println("Entrei em 3");
 }
 
 void travel(){
@@ -56,23 +58,27 @@ void travel(){
   Serial.write(env);
   Serial.write(0b11111111);
   Serial.write(0b11111111);
+  Serial.println("Entrei em 4");
 } 
 
 void Clear(){
   int env;
   env = CalculoProt(CLRP,motor0);
   Serial.write(env);
+  Serial.println("Entrei em 5");
 }
 void SOrienta(){
   int env;
   env = CalculoProt(SREV,motor0);
   Serial.write(env);
+  Serial.println("Entrei em 6");
 }
 void TxDelay(){
   int env,espera =0; // 0=< delay =< 255
   env = CalculoProt(STXD,motor0);
   Serial.write(env);
   Serial.write(espera);
+  Serial.println("Entrei em 7");
 }
 void SMax(){
   int speedH = 0,speedL = 0,env; //0 =< SPEED =< 65535
@@ -80,6 +86,7 @@ void SMax(){
   Serial.write(env);
   Serial.write(speedH);
   Serial.write(speedL);
+  Serial.println("Entrei em 8");
   
 }
 void SpeedRamp(){
@@ -87,58 +94,56 @@ void SpeedRamp(){
   env = CalculoProt(SSRR,motor0);
   Serial.write(env);
   Serial.write(rate);
-  
+  Serial.println("Entrei em 9");
 }
 void setup() {
   Serial.begin(19200);
   pinMode((E0,E1,E2,E3),INPUT);
-  pinMode(9,OUTPUT);  
+  
 }
 
-void funcoes(int bit0,int bit1,int bit2,int bit3 ){
-
-  if(bit0 == 0 && bit1 == 0 && bit2 ==0 && bit3 == 1){ //0001
+void funcoes(char entrada){
+  
+  if(entrada == '1'){ //0001
     QPosition();
     }
   
-  else if(bit0 == 0 and bit1 == 0 and bit2 == 1 and bit3 == 0){
+  else if(entrada == '2'){
     QSpeed();
     }
-   else if(bit0 == 0 and bit1 == 0 and bit2 == 1 and bit3 == 1){
+   else if(entrada == '3'){
     CArrival();
     }
-   else if(bit0 == 0 and bit1 == 1 and bit2 == 0 and bit3 == 0){
+   else if(entrada == '4'){
     travel();
     }
-   else if(bit0 == 0 and bit1 == 1 and bit2 == 0 and bit3 == 1){
+   else if(entrada == '5'){
     Clear();
     }
-   else if(bit0 == 0 and bit1 == 1 and bit2 == 1 and bit3 == 0){
+   else if(entrada == '6'){
     SOrienta();
     }
-   else if(bit0 == 0 and bit1 == 1 and bit2 == 1 and bit3 == 1){
+   else if(entrada == '7'){
     TxDelay();
     }
-   else if(bit0 == 1 and bit1 == 0 and bit2 == 0 and bit3 == 0){
+   else if(entrada == '8'){
     SMax();
     }
-   else if(bit0 == 1 and bit1 == 0 and bit2 == 0 and bit3 == 1){
+   else if(entrada == '9'){
     SpeedRamp();
     }
 }
 
+void leitura(){
+  char x;
+  while(Serial.available()>0){
+    x = Serial.read();
+    funcoes(x);
+  }
+}
 void loop() {
-  int a,b,c,d;
- a = digitalRead(E0);
- b = digitalRead(E1);
- c = digitalRead(E2);
- d = digitalRead(E3);
- Serial.println(a);
- Serial.println(b);
- Serial.println(c);
- Serial.println(d);
- delay(1000);
- funcoes(a,b,c,d);
+  leitura();
+  delay(1000);
    
      
 }

@@ -16,14 +16,14 @@ void loop() {
     Serial.read(); 
     Serial.println(x);
     Serial.println("wow");
-    if(x == 'a'){
+    if(x == '1'){
       
       Serial.println("Entrei funcao 1");
       Serial.println("---------x----------x");
       delay(1000);
      
     }    
-    else if(x == 'b'){
+    else if(x == '2'){
       
       Serial.println("Entrei funcao 2");
       Serial.println("---------x----------x");
@@ -31,7 +31,7 @@ void loop() {
      
     }  
 
-    else if(x == 'c'){
+    else if(x == '3'){
       
       Serial.println("Entrei funcao 3");
       Serial.println("---------x----------x");
