@@ -56,29 +56,31 @@ void travel(){
   int env;
   env = CalculoProt(TRVL,motor0);
   Serial.write(env);
-  Serial.write(0b11111111);
-  Serial.write(0b11111111);
-  Serial.println("Entrei em 4");
+  
+  Serial.write(0b00000000);
+  
+  Serial.write(0b01000000);
+  
 } 
 
 void Clear(){
   int env;
   env = CalculoProt(CLRP,motor0);
   Serial.write(env);
-  Serial.println("Entrei em 5");
+ 
 }
 void SOrienta(){
   int env;
   env = CalculoProt(SREV,motor0);
   Serial.write(env);
-  Serial.println("Entrei em 6");
+  
 }
 void TxDelay(){
   int env,espera =0; // 0=< delay =< 255
   env = CalculoProt(STXD,motor0);
   Serial.write(env);
   Serial.write(espera);
-  Serial.println("Entrei em 7");
+ 
 }
 void SMax(){
   int speedH = 0,speedL = 0,env; //0 =< SPEED =< 65535
@@ -86,7 +88,7 @@ void SMax(){
   Serial.write(env);
   Serial.write(speedH);
   Serial.write(speedL);
-  Serial.println("Entrei em 8");
+  
   
 }
 void SpeedRamp(){
@@ -94,7 +96,6 @@ void SpeedRamp(){
   env = CalculoProt(SSRR,motor0);
   Serial.write(env);
   Serial.write(rate);
-  Serial.println("Entrei em 9");
 }
 void setup() {
   Serial.begin(19200);
@@ -139,8 +140,10 @@ void leitura(){
   while(Serial.available()>0){
     x = Serial.read();
     funcoes(x);
-  }
+    }
 }
+
+
 void loop() {
   leitura();
   delay(1000);
