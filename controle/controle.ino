@@ -45,6 +45,8 @@ void QuerryPosition(char comando[8]) {
     Serial.println(XL);
   }
 }void travel(char comando[8]){
+  byte numero;
+  numero = comando[3]*(10^4) + comando[4]*(10^3) + comando[5]*(10^2) + comando[6]*(10) + comando[7];  //transformando o numero em um só
   byte x = 0; //max 254
   byte y = 63; //max 255
   if(comando[1]=='0') {
@@ -82,7 +84,7 @@ void QuerryPosition(char comando[8]) {
       i++;
     }
 
-    if (i == 7) {   //Wait for all bits(8 bits)
+    if (i == 8) {   //Wait for all bits(8 bits)
       funcoes(Protocolo);
       i = 0;
     }
