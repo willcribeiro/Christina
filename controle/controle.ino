@@ -45,10 +45,19 @@ void QuerryPosition(char comando[8]) {
     Serial.println(XL);
   }
 }void travel(char comando[8]){
-  byte numero;
-  numero = comando[3]*(10^4) + comando[4]*(10^3) + comando[5]*(10^2) + comando[6]*(10) + comando[7];  //transformando o numero em um só
-  byte x = 0; //max 254
-  byte y = 63; //max 255
+ int numero;
+  numero = (comando[3]- '0')*(pow(10,4)) + (comando[4]- '0')*(pow(10,3)) + (comando[5]- '0')*(pow(10,2)) + (comando[6]- '0')*(10) + (comando[7] - '0');  //transformando o numero em um só  
+
+  int k1 = numero*4;
+  int k2 = numero/64;
+
+  byte x = k2; //max 254
+  byte y = k1; //max 255
+
+  if(comando[2] == '1'){
+    x = ~x;
+    y = ~y;
+  }
   if(comando[1]=='0') {
     Serial.write(0b00100100);
     Serial.write(~x);
@@ -82,10 +91,11 @@ void QuerryPosition(char comando[8]) {
       x = Serial.read();
       Protocolo[i] = x;
       i++;
+      if (i == 8) {   //Wait for all bits(8 bits)
+        funcoes(Protocolo);
+        i = 0;
+      }
     }
 
-    if (i == 8) {   //Wait for all bits(8 bits)
-      funcoes(Protocolo);
-      i = 0;
-    }
+   
   }
