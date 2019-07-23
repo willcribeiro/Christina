@@ -60,13 +60,13 @@ void QuerryPosition(char comando[8]) {
 void travel(char comando[8]) {
   int numero, rotacao;
   numero = (comando[3] - '0') * (pow(10, 4)) + (comando[4] - '0') * (pow(10, 3)) + (comando[5] - '0') * (pow(10, 2)) + (comando[6] - '0') * (10) + (comando[7] - '0'); //transformando o numero em um só
-  rotacao = numero * 9;  //9 para uma rotação
+  rotacao = numero * 38;  //9 para uma rotação
   if (rotacao > 32767) {
     rotacao = 32767;
   }
 
-  int k1 = rotacao * 4;
-  int k2 = rotacao / 64;
+  int k1 = rotacao & 0x00FF;
+  int k2 = rotacao>>8;
 
   byte x = k2; //max 254
   byte y = k1; //max 255
@@ -94,8 +94,8 @@ void travel(char comando[8]) {
   }
   else if (comando[1] == '1') { //Mover a roda 1
     Serial.write(0b00100100);
-    Serial.write(~x);
-    Serial.write(~y);
+   Serial.write(0b00000000); //Teste de movimentacao
+    Serial.write(0b00100101);
 
     if (comando[2] == '1') {
       Rot1 = Rot1 - numero;
@@ -107,8 +107,8 @@ void travel(char comando[8]) {
   }
   else if (comando[1] == '2') { //Mover a roda 2
     Serial.write(0b00100010);
-    Serial.write(0b00000111); //Teste de movimentacao
-    Serial.write(0b00001000);
+    Serial.write(0b00000000); //Teste de movimentacao
+    Serial.write(0b01001010);
 
 
     if (comando[2] == '1') {
