@@ -1,4 +1,8 @@
 
+#include <SoftwareSerial.h>
+
+SoftwareSerial mySerial(10, 11);
+
 //Instrucao de Querry
 int QPOS = 0b00001;
 int QSPD = 0b00010;
@@ -44,25 +48,11 @@ void ClearPosition(char comando[8]) {
     Rot2 = 0;
   }
 }
-void QuerryPosition(char comando[8]) {
-  int XH, XL;
 
-  if (comando[1] == '0') {      //Colet info about all motors
-    Serial.println(Rot1);       //Mudar para envio serial,  para o Rasp
-    Serial.println(Rot2);
-  }
-  else if (comando[1] == '1') { //Colet infoabout motor 1
-    Serial.println(Rot1);
-  }
-  else if (comando[1] == '2') { //Colet infoabout motor 2
-    Serial.println(Rot2);
-  }
-
-}
 void travel(char comando[8]) {
   int numero, rotacao;
   numero = (comando[3] - '0') * (pow(10, 4)) + (comando[4] - '0') * (pow(10, 3)) + (comando[5] - '0') * (pow(10, 2)) + (comando[6] - '0') * (10) + (comando[7] - '0'); //transformando o numero em um só
-  rotacao = numero * 38;  //9 para uma rotação
+  rotacao = numero * 36;  //9 para uma rotação
   if (rotacao > 32767) {
     rotacao = 32767;
   }
@@ -78,48 +68,67 @@ void travel(char comando[8]) {
     y = ~y;
   }
   if (comando[1] == '0') {  //Mover  as 2 rodas
-    Serial.write(0b00100100);
-    Serial.write(~x);
-    Serial.write(~y);
-    Serial.write(0b00100010);
-    Serial.write(x);
-    Serial.write(y);
+    Serial1.write(0b00100100);
+    delay(10);
+    Serial1.write(~x);
+    delay(10);
+    Serial1.write(~y);
+    delay(10);
+    Serial1.write(0b00100010);
+    delay(10);
+    Serial1.write(x);
+    delay(10);
+    Serial1.write(y);
 
-    if (comando[2] == '1') {   //Quantidade de giros
-      Rot1 = Rot1 - numero;
-      Rot2 = Rot2 - numero;
-    }
-    else {
-      Rot1 = Rot1 + numero;
-      Rot2 = Rot2 + numero;
-    }
+
+
+
   }
   else if (comando[1] == '1') { //Mover a roda 1
-    Serial.write(0b00100100);
-    Serial.write(~x); //Teste de movimentacao
-    Serial.write(~y);
+    Serial1.write(0b00100100);
+    Serial1.write(~x); //Teste de movimentacao
+    Serial1.write(~y);
 
-    if (comando[2] == '1') {
-      Rot1 = Rot1 - numero;
-    }
-    else {
-      Rot1 = Rot1 + numero;
-    }
+
 
   }
   else if (comando[1] == '2') { //Mover a roda 2
-    Serial.write(0b00100010);
-    Serial.write(x); //Teste de movimentacao
-    Serial.write(y);
+    Serial1.write(0b00100010);
+    Serial1.write(x); //Teste de movimentacao
+    Serial1.write(y);
 
 
-    if (comando[2] == '1') {
-      Rot2 = Rot2 - numero;
+
+  }
+
+}
+void QuerryPosition(char comando[8]) {
+  int XH, XL;
+
+  if (comando[1] == '0') {      //Collect info about all motors
+    Serial1.write(0b00001000);
+
+    XH = Serial1.read();
+    XL = Serial1.read();
+    Serial.println(XH);
+    Serial.println(XL);
+
+  }
+
+
+  else if (comando[1] == '1') { //Colet infoabout motor 1
+    Serial1.write(0b00001100);
+    if (Serial1.available() > 0) {
+      XH = Serial1.read();
+      XL = Serial1.read();
+      Serial.println(XH);
+
+      Serial.println(XL);
     }
-    else {
-      Rot2 = Rot2 + numero;
-    }
-
+  }
+  else if (comando[1] == '2') { //Colet infoabout motor 2
+    Serial.write(0b00001010);
+    Serial.println(Rot2);
   }
 
 }
@@ -132,36 +141,37 @@ void SpeedMax(char comando[8]) {
 
   byte x = k2; //max 254
   byte y = k1; //max 255
+  Serial.print("Entrei");
 
   if (comando[1] == '0') {
-    Serial.write(0b01000001);
-    Serial.write(x);
-    Serial.write(y);
+    Serial1.write(0b01000001);
+    Serial1.write(x);
+    Serial1.write(y);
   }
   else if (comando[1] == '1') {
-    Serial.write(0b01000100);
-    Serial.write(x);
-    Serial.write(y);
+    Serial1.write(0b01000100);
+    Serial1.write(x);
+    Serial1.write(y);
   }
 
   else if (comando[1] == '2') {
-    Serial.write(0b01000010);
-    Serial.write(x);
-    Serial.write(y);
+    Serial1.write(0b01000010);
+    Serial1.write(x); 
+    Serial1.write(y);
   }
 
 }
 void setup() {
   Serial.begin(19200);
-
+  Serial1.begin(19200);
 }
 
 void loop() {
   char x;
   //-----------------TESTE DE MOVIMENTACAO PRE DETERMINADA------------------------
-  /*char movimento1[8], movimento2[8];
+  /* char movimento1[8], movimento2[8];
     movimento1[0] = '4';
-    movimento1[1] = '0';
+    movimento1[1] = '1';
     movimento1[2] = '0';
     movimento1[3] = '0';
     movimento1[4] = '0';
@@ -170,7 +180,7 @@ void loop() {
     movimento1[7] = '3';
 
     movimento2[0] = '1';
-    movimento2[1] = '0';
+    movimento2[1] = '1';
     movimento2[2] = '0';
     movimento2[3] = '0';
     movimento2[4] = '0';
@@ -178,25 +188,24 @@ void loop() {
     movimento2[6] = '0';
     movimento2[7] = '0';
     while (Serial.available() > 0) {
-    x = Serial.read();
+     x = Serial.read();
 
-    if (x == '8') {   //Wait for all bits(8 bits)
+     if (x == '8') {   //Wait for all bits(8 bits)
+       while (true) {
+         funcoes(movimento1);
+         movimento1[6] = '0';
+         movimento1[7] = '8';
+         delay(1000);
+         funcoes(movimento2);
+         delay(1000);
+         funcoes(movimento1);
+         movimento1[6] = '0';
+         movimento1[7] = '1';
+         delay(1000);
+       }
 
-      funcoes(movimento1);
-      delay(5000);
-      movimento1[1] = '1';
-      movimento1[2] = '0';
-      movimento1[7] = '5';
-      funcoes(movimento1);
-      movimento1[1] = '2';
-      movimento1[2] = '1';
-      movimento1[7] = '5';
-      funcoes(movimento1);
-      delay(5000);
-      funcoes(movimento2);
 
-
-    }
+     }
     }*/
 
   while (Serial.available() > 0) {
