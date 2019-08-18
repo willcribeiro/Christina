@@ -18,7 +18,7 @@ int SSRR = 0b01001;
 //Variavel Global
 int i = 0;
 char Protocolo[8];
-int Rot1, Rot2 = 0; //Rotacao dos motores
+float Rot1, Rot2 = 0; //Rotacao dos motores
 
 void funcoes(char nome[8]) {
 
@@ -39,7 +39,7 @@ void funcoes(char nome[8]) {
 void ClearPosition(char comando[8]) {
   if (comando[1] == '0') {
     Rot1 = 0;             //Motor1
-    Rot2 = 0;             //Motor2
+    Rot2 = 0;   //Motor2
   }
   else if (comando[1] == '1') {
     Rot1 = 0;
@@ -52,7 +52,8 @@ void ClearPosition(char comando[8]) {
 void travel(char comando[8]) {
   int numero, rotacao;
   numero = (comando[3] - '0') * (pow(10, 4)) + (comando[4] - '0') * (pow(10, 3)) + (comando[5] - '0') * (pow(10, 2)) + (comando[6] - '0') * (10) + (comando[7] - '0'); //transformando o numero em um só
-  rotacao = numero * 36;  //9 para uma rotação
+  // rotacao = numero * 36;  //9 para uma rotação
+  rotacao = numero;
   if (rotacao > 32767) {
     rotacao = 32767;
   }
@@ -79,58 +80,30 @@ void travel(char comando[8]) {
     Serial1.write(x);
     delay(10);
     Serial1.write(y);
-
-
-
-
   }
   else if (comando[1] == '1') { //Mover a roda 1
     Serial1.write(0b00100100);
     Serial1.write(~x); //Teste de movimentacao
     Serial1.write(~y);
-
-
-
   }
   else if (comando[1] == '2') { //Mover a roda 2
     Serial1.write(0b00100010);
     Serial1.write(x); //Teste de movimentacao
     Serial1.write(y);
-
-
-
   }
-
 }
 void QuerryPosition(char comando[8]) {
-  int XH, XL;
 
   if (comando[1] == '0') {      //Collect info about all motors
-    Serial1.write(0b00001000);
-
-    XH = Serial1.read();
-    XL = Serial1.read();
-    Serial.println(XH);
-    Serial.println(XL);
-
-  }
-
-
-  else if (comando[1] == '1') { //Colet infoabout motor 1
-    Serial1.write(0b00001100);
-    if (Serial1.available() > 0) {
-      XH = Serial1.read();
-      XL = Serial1.read();
-      Serial.println(XH);
-
-      Serial.println(XL);
-    }
-  }
-  else if (comando[1] == '2') { //Colet infoabout motor 2
-    Serial.write(0b00001010);
+    Serial.println(Rot1);
     Serial.println(Rot2);
   }
-
+  else if (comando[1] == '1') { //Colet infoabout motor 1
+    Serial.println(Rot1);
+  }
+  else if (comando[1] == '2') { //Colet infoabout motor 2
+    Serial.println(Rot2);
+  }
 }
 void SpeedMax(char comando[8]) {
 
@@ -138,27 +111,72 @@ void SpeedMax(char comando[8]) {
   numero = (comando[3] - '0') * (pow(10, 4)) + (comando[4] - '0') * (pow(10, 3)) + (comando[5] - '0') * (pow(10, 2)) + (comando[6] - '0') * (10) + (comando[7] - '0'); //transformando o numero em um só
   int k1 = numero & 0x00FF;
   int k2 = numero >> 8;
-
   byte x = k2; //max 254
   byte y = k1; //max 255
+
+
   Serial.print("Entrei");
 
+  if (numero == 0) {
+    char movimento[8] = {'4', '0', '0', '0', '0', '0',  '0', '0'};
+  }
   if (comando[1] == '0') {
-    Serial1.write(0b01000001);
+    Serial1.write(0b01000000);
     Serial1.write(x);
     Serial1.write(y);
+    if (comando[2] == '1') {
+      Rot1 = Rot1 - 0.24;
+      Rot2 = Rot2 - 0.24;
+      char movimento[8] = {'4', '0', '1', '0', '0', '0',  '0', '9'};
+      travel(movimento);
+    }
+    else {
+      Rot1 = Rot1 + 0.24;
+      Rot2 = Rot2 + 0.24;
+      char movimento[8] = {'4', '0', '0', '0', '0', '0',  '0', '9'};
+      travel(movimento);
+
+    }
+
+
   }
   else if (comando[1] == '1') {
     Serial1.write(0b01000100);
     Serial1.write(x);
     Serial1.write(y);
+    if (comando[2] == '1') {
+      Rot1 = Rot1 - 0.24;
+      char movimento[8] = {'4', '1', '1', '0', '0', '0',  '0', '9'};
+      travel(movimento);
+    }
+    else {
+      Rot1 = Rot1 + 0.24;
+      char movimento[8] = {'4', '1', '0', '0', '0', '0',  '0', '9'};
+      travel(movimento);
+
+    }
   }
 
   else if (comando[1] == '2') {
     Serial1.write(0b01000010);
-    Serial1.write(x); 
+    Serial1.write(x);
     Serial1.write(y);
+    if (comando[2] == '1') {
+      Rot2 = Rot2 - 0.24;
+      char movimento[8] = {'4', '2', '1', '0', '0', '0',  '0', '9'};
+      travel(movimento);
+    }
+    else {
+      Rot2 = Rot2 + 0.24;
+      char movimento[8] = {'4', '2', '0', '0', '0', '0',  '0', '9'};
+      travel(movimento);
+
+    };
   }
+
+}
+
+void leitura() {
 
 }
 void setup() {
@@ -186,29 +204,70 @@ void loop() {
     movimento2[4] = '0';
     movimento2[5] = '0';
     movimento2[6] = '0';
-    movimento2[7] = '0';
-    while (Serial.available() > 0) {
-     x = Serial.read();
-
-     if (x == '8') {   //Wait for all bits(8 bits)
-       while (true) {
-         funcoes(movimento1);
-         movimento1[6] = '0';
-         movimento1[7] = '8';
-         delay(1000);
-         funcoes(movimento2);
-         delay(1000);
-         funcoes(movimento1);
-         movimento1[6] = '0';
-         movimento1[7] = '1';
-         delay(1000);
-       }
-
-
-     }
-    }*/
-
+    movimento2[7] = '0';*/
+  char movimento[8] = {'8', '0', '0', '0', '0', '0',  '0', '8'};
   while (Serial.available() > 0) {
+    x = Serial.read();
+  }
+  int lol = 0;
+  if (x == '8') {   //Wait for all bits(8 bits)
+    while (lol < 25) {
+
+      SpeedMax(movimento);
+      delay(50);
+      SpeedMax(movimento);
+      delay(50);
+      SpeedMax(movimento);
+      delay(500);
+      SpeedMax(movimento);
+      delay(50);
+      SpeedMax(movimento);
+      delay(50);
+      SpeedMax(movimento);
+      delay(50);
+      SpeedMax(movimento);
+      delay(4000);
+      movimento[7] = '0';
+      delay(1000);
+      movimento[7] = '8';
+
+
+      movimento[1] = '1';
+      movimento[2] = '1';
+      SpeedMax(movimento);
+      movimento[1] = '2';
+      movimento[2] = '0';
+      SpeedMax(movimento);
+      delay(10);
+      movimento[1] = '1';
+      movimento[2] = '1';
+      SpeedMax(movimento);
+      movimento[1] = '2';
+      movimento[2] = '0';
+      SpeedMax(movimento);
+      delay(10);
+      movimento[1] = '1';
+      movimento[2] = '1';
+      SpeedMax(movimento);
+      movimento[1] = '2';
+      movimento[2] = '0';
+      SpeedMax(movimento);
+      delay(5000);
+      movimento[1] = '0';
+      movimento[2] = '0';
+
+      lol++;
+
+    }
+
+    movimento[0] = '1';
+    movimento[1] = '0';
+    movimento[2] = '0';
+    QuerryPosition(movimento);
+
+  }
+
+  /*while (Serial.available() > 0) {
     x = Serial.read();
     Protocolo[i] = x;
     i++;
@@ -216,5 +275,5 @@ void loop() {
       funcoes(Protocolo);
       i = 0;
     }
-  }
+    }*/
 }
