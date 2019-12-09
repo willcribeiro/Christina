@@ -17,8 +17,31 @@ int SMAX = 0b01000;
 int SSRR = 0b01001;
 //Variavel Global
 int i = 0;
+float Pi = 3.1415926535;
+int RD = 8;
+int RE = 8;
+int CE = 36;
+float X = 0;
+float Y = 0;
+float teta = 0;
+int B = 40;
 char Protocolo[8];
 float Rot1, Rot2 = 0; //Rotacao dos motores
+
+int odometria(int ND, int NE) {
+  //Serial.println(ND);
+  //Serial.println(NE);
+  X = X + (RD * ND + RE * NE) * (Pi / CE) * cos(teta);
+  Y = Y + (RD * ND + RE * NE) * (Pi / CE) * sin(teta);
+  teta = teta + (RD * ND - RE * NE) * (2 * Pi / CE) / B;
+  Serial.print("X eh ");
+  Serial.println(X);
+  Serial.print("Y eh ");
+  Serial.println(Y);
+  Serial.print("Teta eh ");
+  Serial.println(teta);
+  return;
+}
 
 void funcoes(char nome[8]) {
 
@@ -52,12 +75,11 @@ void ClearPosition(char comando[8]) {
 void travel(char comando[8]) {
   int numero, rotacao;
   numero = (comando[3] - '0') * (pow(10, 4)) + (comando[4] - '0') * (pow(10, 3)) + (comando[5] - '0') * (pow(10, 2)) + (comando[6] - '0') * (10) + (comando[7] - '0'); //transformando o numero em um só
-  // rotacao = numero * 36;  //9 para uma rotação
+  //rotacao = numero * 36;  //9 para uma rotação
   rotacao = numero;
   if (rotacao > 32767) {
     rotacao = 32767;
   }
-
   int k1 = rotacao & 0x00FF;
   int k2 = rotacao >> 8;
 
@@ -69,6 +91,7 @@ void travel(char comando[8]) {
     y = ~y;
   }
   if (comando[1] == '0') {  //Mover  as 2 rodas
+    odometria(rotacao, rotacao);
     Serial1.write(0b00100100);
     delay(10);
     Serial1.write(~x);
@@ -82,11 +105,13 @@ void travel(char comando[8]) {
     Serial1.write(y);
   }
   else if (comando[1] == '1') { //Mover a roda 1
+    odometria(0, rotacao);
     Serial1.write(0b00100100);
     Serial1.write(~x); //Teste de movimentacao
     Serial1.write(~y);
   }
   else if (comando[1] == '2') { //Mover a roda 2
+    odometria(rotacao, 0);
     Serial1.write(0b00100010);
     Serial1.write(x); //Teste de movimentacao
     Serial1.write(y);
@@ -128,11 +153,13 @@ void SpeedMax(char comando[8]) {
       Rot1 = Rot1 - 0.24;
       Rot2 = Rot2 - 0.24;
       char movimento[8] = {'4', '0', '1', '0', '0', '0',  '0', '9'};
+
       travel(movimento);
     }
     else {
       Rot1 = Rot1 + 0.24;
       Rot2 = Rot2 + 0.24;
+
       char movimento[8] = {'4', '0', '0', '0', '0', '0',  '0', '9'};
       travel(movimento);
 
@@ -146,11 +173,13 @@ void SpeedMax(char comando[8]) {
     Serial1.write(y);
     if (comando[2] == '1') {
       Rot1 = Rot1 - 0.24;
+
       char movimento[8] = {'4', '1', '1', '0', '0', '0',  '0', '9'};
       travel(movimento);
     }
     else {
       Rot1 = Rot1 + 0.24;
+
       char movimento[8] = {'4', '1', '0', '0', '0', '0',  '0', '9'};
       travel(movimento);
 
@@ -163,11 +192,13 @@ void SpeedMax(char comando[8]) {
     Serial1.write(y);
     if (comando[2] == '1') {
       Rot2 = Rot2 - 0.24;
+
       char movimento[8] = {'4', '2', '1', '0', '0', '0',  '0', '9'};
       travel(movimento);
     }
     else {
       Rot2 = Rot2 + 0.24;
+
       char movimento[8] = {'4', '2', '0', '0', '0', '0',  '0', '9'};
       travel(movimento);
 
@@ -205,58 +236,59 @@ void loop() {
     movimento2[5] = '0';
     movimento2[6] = '0';
     movimento2[7] = '0';*/
-  char movimento[8] = {'8', '0', '0', '0', '0', '0',  '0', '8'};
-  while (Serial.available() > 0) {
+  /*
+    char movimento[8] = {'8', '0', '0', '0', '0', '0',  '0', '8'};
+    while (Serial.available() > 0) {
     x = Serial.read();
-  }
-  int lol = 0;
-  if (x == '8') {   //Wait for all bits(8 bits)
+    }
+    int lol = 0;
+    if (x == '8') {   //Wait for all bits(8 bits)
     while (lol < 25) {
 
-      SpeedMax(movimento);
-      delay(50);
-      SpeedMax(movimento);
-      delay(50);
-      SpeedMax(movimento);
-      delay(500);
-      SpeedMax(movimento);
-      delay(50);
-      SpeedMax(movimento);
-      delay(50);
-      SpeedMax(movimento);
-      delay(50);
-      SpeedMax(movimento);
-      delay(4000);
-      movimento[7] = '0';
-      delay(1000);
-      movimento[7] = '8';
+    SpeedMax(movimento);
+    delay(50);
+    SpeedMax(movimento);
+    delay(50);
+    SpeedMax(movimento);
+    delay(500);
+    SpeedMax(movimento);
+    delay(50);
+    SpeedMax(movimento);
+    delay(50);
+    SpeedMax(movimento);
+    delay(50);
+    SpeedMax(movimento);
+    delay(4000);
+    movimento[7] = '0';
+    delay(1000);
+    movimento[7] = '8';
 
 
-      movimento[1] = '1';
-      movimento[2] = '1';
-      SpeedMax(movimento);
-      movimento[1] = '2';
-      movimento[2] = '0';
-      SpeedMax(movimento);
-      delay(10);
-      movimento[1] = '1';
-      movimento[2] = '1';
-      SpeedMax(movimento);
-      movimento[1] = '2';
-      movimento[2] = '0';
-      SpeedMax(movimento);
-      delay(10);
-      movimento[1] = '1';
-      movimento[2] = '1';
-      SpeedMax(movimento);
-      movimento[1] = '2';
-      movimento[2] = '0';
-      SpeedMax(movimento);
-      delay(5000);
-      movimento[1] = '0';
-      movimento[2] = '0';
+    movimento[1] = '1';
+    movimento[2] = '1';
+    SpeedMax(movimento);
+    movimento[1] = '2';
+    movimento[2] = '0';
+    SpeedMax(movimento);
+    delay(10);
+    movimento[1] = '1';
+    movimento[2] = '1';
+    SpeedMax(movimento);
+    movimento[1] = '2';
+    movimento[2] = '0';
+    SpeedMax(movimento);
+    delay(10);
+    movimento[1] = '1';
+    movimento[2] = '1';
+    SpeedMax(movimento);
+    movimento[1] = '2';
+    movimento[2] = '0';
+    SpeedMax(movimento);
+    delay(5000);
+    movimento[1] = '0';
+    movimento[2] = '0';
 
-      lol++;
+    lol++;
 
     }
 
@@ -265,9 +297,9 @@ void loop() {
     movimento[2] = '0';
     QuerryPosition(movimento);
 
-  }
-
-  /*while (Serial.available() > 0) {
+    }*/
+  /*
+    while (Serial.available() > 0) {
     x = Serial.read();
     Protocolo[i] = x;
     i++;
@@ -276,4 +308,31 @@ void loop() {
       i = 0;
     }
     }*/
+
+  char movimento1[8];
+  movimento1[0] = '4';
+  movimento1[1] = '0';
+  movimento1[2] = '1';
+  movimento1[3] = '0';
+  movimento1[4] = '0';
+  movimento1[5] = '0';
+  movimento1[6] = '7';
+  movimento1[7] = '2';
+  while (Serial.available() > 0) {
+    x = Serial.read();
+    if (x == '8') {   //Wait for all bits(8 bits)
+      for (int k = 0; k < 20; k++) {
+        movimento1[1] = '0';
+        movimento1[6] = '7';
+        movimento1[7] = '2';
+        travel(movimento1);
+        delay(5000);
+        movimento1[1] = '2';
+        movimento1[6] = '4';
+        movimento1[7] = '5';
+        travel(movimento1);
+        delay(5000);
+      }
+    }
+  }
 }
