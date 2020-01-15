@@ -24,9 +24,9 @@ int CalculoProt(int Nome, int mot ) { //concatenacao de protocolos
   return x;
 }
 
-void travel(char comando[8]) {
+void travel(int comando[2]) {
   int numero, rotacao;
-  numero = (comando[3] - '0') * (pow(10, 4)) + (comando[4] - '0') * (pow(10, 3)) + (comando[5] - '0') * (pow(10, 2)) + (comando[6] - '0') * (10) + (comando[7] - '0'); //transformando o numero em um só
+  numero = comando[1];
   rotacao = numero * 36;  //9 para uma rotação
   //rotacao = numero;
   if (rotacao > 32767) {
@@ -38,11 +38,8 @@ void travel(char comando[8]) {
   byte x = k2; //max 254
   byte y = k1; //max 255
 
-  if (comando[2] == '1') {  //Se for negativo, complemento A1
-    x = ~x;
-    y = ~y;
-  }
-  if (comando[1] == '0') {  //Mover  as 2 rodas
+
+  if (comando[0] == 9) {  //Mover  as 2 rodas
     Serial.write(0b00100100);
     Serial.write(~x);
     Serial.write(~y);
@@ -50,31 +47,38 @@ void travel(char comando[8]) {
     Serial.write(x);
     Serial.write(y);
   }
-  else if (comando[1] == '1') { //Mover a roda 1
+  else if (comando[0] == 1) { //Mover a roda 1
     Serial.write(0b00100100);
     Serial.write(~x); //Teste de movimentacao
     Serial.write(~y);
   }
-  else if (comando[1] == '2') { //Mover a roda 2
+  else if (comando[1] == 2) { //Mover a roda 2
     Serial.write(0b00100010);
     Serial.write(x); //Teste de movimentacao
     Serial.write(y);
   }
 }
 
-void SpeedMax(int numero) {
-  int k1 = numero & 0x00FF;
-  int k2 = numero >> 8;
+void SpeedMax(int numero[2]) {
+  int k1 = numero[1] & 0x00FF;
+  int k2 = numero[1] >> 8;
   byte x = k2; //max 254
   byte y = k1; //max 255
-  if (numero == 0) {
-    char movimento[8] = {'4', '0', '0', '0', '0', '0',  '0', '0'};
+
+  if (numero[0] == 9) {
+    Serial.write(0b01000000);
+    Serial.write(x);
+    Serial.write(y);
+    int movimento[2] = {9, 3};
+    travel(movimento);
   }
-  Serial.write(0b01000000);
-  Serial.write(x);
-  Serial.write(y);
-  char movimento[8] = {'4', '0', '1', '0', '0', '0',  '0', '9'};
-  travel(movimento);
+   if (numero[0] == 1) {
+    Serial.write(0b01000100);
+    Serial.write(x);
+    Serial.write(y);
+    int movimento[2] = {9, 3};
+    travel(movimento);
+  }
 }
 
 void setup() {
@@ -89,14 +93,24 @@ void setup() {
 void receiveEvent(int howMany) {
   while (Wire.available()) { // loop through all but the last
     int c = Wire.read(); // receive byte as a character
-    if (c == 1) {
-      Serial.print("ENtrei");
-      SpeedMax(0);
+    if (c == 0) {
+      c = Wire.read();
     }
-    else if (c == 0) {
-      Serial.print("Entrei");
-      SpeedMax(20);
-    }
+    int b = Wire.read();
+    int vet[2] = {c, b};
+    //travel(vet);
+    SpeedMax(vet);
+
+
+
+
+    // }
+    // else if (c == 0) {
+    //  Serial.println("Entrei");
+    // Serial.println(c);
+    //Serial.println(b);
+    // SpeedMax(20);
+    // }
   }
 }
 
