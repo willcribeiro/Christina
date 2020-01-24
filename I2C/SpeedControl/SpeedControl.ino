@@ -29,8 +29,8 @@ int B = 40;
 void travel(int comando[2]) { //controll the position
   int numero, rotacao;
   numero = abs(comando[1]);
-  rotacao = numero * 36;  //9 para uma rotação
-
+  //rotacao = numero * 36;  //9 para uma rotação
+  rotacao = numero;
   if (rotacao > 32767) {
     rotacao = 32767;
   }
@@ -79,7 +79,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(x);
       Serial.write(y);
 
-      int movimento[2] = {9, 1};
+      int movimento[2] = {9, 9};
       travel(movimento);
     }
     if (numero[0] == 1) {
@@ -87,7 +87,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(x);
       Serial.write(y);
 
-      int movimento[2] = {9, 1};
+      int movimento[2] = {9, 9};
       travel(movimento);
     }
     if (numero[0] == 2) {
@@ -95,7 +95,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(x);
       Serial.write(y);
 
-      int movimento[2] = {9, 1};
+      int movimento[2] = {9, 9};
       travel(movimento);
     }
   }
@@ -105,7 +105,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(x);
       Serial.write(y);
 
-      int movimento[2] = {9, -1};
+      int movimento[2] = {9, -9};
       travel(movimento);
     }
     if (numero[0] == 1) {
@@ -113,7 +113,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(x);
       Serial.write(y);
 
-      int movimento[2] = {9, -1};
+      int movimento[2] = {9, -9};
       travel(movimento);
     }
     if (numero[0] == 2) {
@@ -121,7 +121,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(x);
       Serial.write(y);
 
-      int movimento[2] = {9, -1};
+      int movimento[2] = {9, -9};
       travel(movimento);
     }
   }
