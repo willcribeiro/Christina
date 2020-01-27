@@ -26,6 +26,8 @@ float Y = 0;
 float teta = 0;
 int B = 40;
 
+char str[15];
+
 void travel(int comando[2]) { //controll the position
   int numero, rotacao;
   numero = abs(comando[1]);
@@ -46,6 +48,7 @@ void travel(int comando[2]) { //controll the position
     y = ~y;
   }
   if (comando[0] == 9) {  //Move the 2 wheels
+    odometria(rotacao, rotacao);
     Serial.write(0b00100100);
     Serial.write(~x);
     Serial.write(~y);
@@ -54,11 +57,13 @@ void travel(int comando[2]) { //controll the position
     Serial.write(y);
   }
   else if (comando[0] == 1) { //Move the rigth wheel
+    odometria(0, rotacao);
     Serial.write(0b00100100);
     Serial.write(~x);
     Serial.write(~y);
   }
   else if (comando[1] == 2) { //Move the left wheel
+    odometria(rotacao, 0);
     Serial.write(0b00100010);
     Serial.write(x);
     Serial.write(y);
@@ -132,13 +137,22 @@ int odometria(int ND, int NE) {
   X = X + (RD * ND + RE * NE) * (Pi / CE) * cos(teta);
   Y = Y + (RD * ND + RE * NE) * (Pi / CE) * sin(teta);
   teta = teta + (RD * ND - RE * NE) * (2 * Pi / CE) / B;
-  return;
+ }
+
+void requestEvent()
+{
+  int valor = X;
+  Serial.println("Requisicao recebida!");
+  sprintf(str, "Valor: %4dn", valor);
+  Wire.write(str);
 }
+
 
 void setup() {
   Serial.begin(19200);
-  Wire.begin(0x8);
+  Wire.begin(0x18);
   Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
 }
 
 //The protocol receives 3 value,  the fist is what motors. 1 for right,2 for left and 9 for both.
@@ -156,8 +170,6 @@ void receiveEvent(int howMany) {
       nb3 = -nb3;
 
     int vet[2] = {nb1, nb3};
-
-    //travel(vet);
     SpeedMax(vet);  //Call the function
   }
 }
