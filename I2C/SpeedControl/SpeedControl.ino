@@ -20,19 +20,19 @@ int motor0 = 0b000;
 float Pi = 3.1415926535;
 int RD = 8;  //right wheel
 int RE = 8;  //Leftwhell
-int CE = 36; //distance to center
+int CE = 36; 
 float X = 0;
 float Y = 0;
 float teta = 0;
 int B = 40;
-
+int VR1 =36,VR2 = 36; //Velocidade padrão das rodas
 char str[15];
 
 void travel(int comando[2]) { //controll the position
   int numero, rotacao;
-  numero = abs(comando[1]);
-  //rotacao = numero * 36;  //9 para uma rotação
-  rotacao = numero;
+  numero = comando[1];
+  //rotacao = numero * 36;  
+  rotacao = abs(comando[1]);
   if (rotacao > 32767) {
     rotacao = 32767;
   }
@@ -48,7 +48,6 @@ void travel(int comando[2]) { //controll the position
     y = ~y;
   }
   if (comando[0] == 9) {  //Move the 2 wheels
-    odometria(rotacao, rotacao);
     Serial.write(0b00100100);
     Serial.write(~x);
     Serial.write(~y);
@@ -57,13 +56,12 @@ void travel(int comando[2]) { //controll the position
     Serial.write(y);
   }
   else if (comando[0] == 1) { //Move the rigth wheel
-    odometria(0, rotacao);
     Serial.write(0b00100100);
     Serial.write(~x);
     Serial.write(~y);
   }
-  else if (comando[1] == 2) { //Move the left wheel
-    odometria(rotacao, 0);
+  else if (comando[0] == 2) { //Move the left wheel
+    odometria(numero, 0);
     Serial.write(0b00100010);
     Serial.write(x);
     Serial.write(y);
@@ -71,37 +69,57 @@ void travel(int comando[2]) { //controll the position
 }
 
 void SpeedMax(int numero[2]) {  //Controll the speed
-  int aux = numero[1];
-  numero[1] = abs(numero[1]);
-  int k1 = numero[1] & 0x00FF;
-  int k2 = numero[1] >> 8;
+//Converter vel.  angular em Numero de pulsos : rpm -> pulsos/0.5s
+  int N_P = abs(numero[1]) * 0.3;
+  
+  int k1 = N_P & 0x00FF;
+  int k2 = N_P >> 8;
   byte x = k2; //max 254
   byte y = k1; //max 255
 
-  if (aux >= 0) { //If forward
+  if (numero[1] >= 0) { //If forward
     if (numero[0] == 9) {
       Serial.write(0b01000000);
       Serial.write(x);
       Serial.write(y);
-
+      VR1 = abs(numero[1]);
+      VR2 = VR1;
+      
       int movimento[2] = {9, 9};
+      odometria(movimento[1], movimento[1]);
       travel(movimento);
     }
     if (numero[0] == 1) {
       Serial.write(0b01000100);
       Serial.write(x);
       Serial.write(y);
-
-      int movimento[2] = {9, 9};
+      //Para que ambas as rodas terminem iguais
+      VR1 = abs(numero[1]);
+      int aux;
+      // W1/W2 * X2 = X1
+      aux  =  (VR1/VR2)*9;
+      int movimento[2] = {1, aux};
       travel(movimento);
+      int movimento2[2] = {2, 9};
+      travel(movimento2);
+      odometria(aux,9);
+      
     }
     if (numero[0] == 2) {
       Serial.write(0b01000010);
       Serial.write(x);
       Serial.write(y);
-
-      int movimento[2] = {9, 9};
+      //Para que ambas as rodas terminem iguais
+      VR2 = abs(numero[1]);
+      int aux;
+      // W1/W2 * X2 = X1
+      aux  = (VR1/VR2)*9;
+      int movimento[2] = {1, aux};
       travel(movimento);
+      int movimento2[2] = {2, 9};
+      travel(movimento2);
+      odometria(aux,9);
+      
     }
   }
   else {
@@ -111,6 +129,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(y);
 
       int movimento[2] = {9, -9};
+      odometria(movimento[1], movimento[1]);
       travel(movimento);
     }
     if (numero[0] == 1) {
@@ -119,6 +138,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(y);
 
       int movimento[2] = {9, -9};
+      odometria(0, movimento[1]);
       travel(movimento);
     }
     if (numero[0] == 2) {
@@ -127,6 +147,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(y);
 
       int movimento[2] = {9, -9};
+      odometria(movimento[1], 0);
       travel(movimento);
     }
   }
@@ -136,15 +157,15 @@ void SpeedMax(int numero[2]) {  //Controll the speed
 int odometria(int ND, int NE) {
   X = X + (RD * ND + RE * NE) * (Pi / CE) * cos(teta);
   Y = Y + (RD * ND + RE * NE) * (Pi / CE) * sin(teta);
-  teta = teta + (RD * ND - RE * NE) * (2 * Pi / CE) / B;
+  teta = teta + (RD * ND - RE * NE) * (2 * Pi / CE) / B;  
  }
 
-void requestEvent()
-{
-  int valor = X;
-  Serial.println("Requisicao recebida!");
-  sprintf(str, "Valor: %4dn", valor);
-  Wire.write(str);
+void requestEvent(){
+   float data[3];
+   data[0] = X;
+   data[1] = Y;
+   data[2] = teta;
+   Wire.write((byte*) &data, 3*sizeof(float));
 }
 
 
