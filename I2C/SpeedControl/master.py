@@ -1,4 +1,5 @@
 from smbus import SMBus
+from time import sleep
 import struct
 
 addr = 0x18
@@ -6,15 +7,12 @@ bus = SMBus(1)
 
 numb = 1
 
-def RequisitaDadosArduino():
-    global msg_recebida
-    dados_recebidos_Arduino = bus.read_i2c_block_data(addr, 0,11)
-    for i in range(len(dados_recebidos_Arduino)):
-        msg_recebida += chr(dados_recebidos_Arduino[i])
-    print(msg_recebida)
-    dados_recebidos_Arduino =""
-    msg_recebida = ""
-msg_recebida = ""
+def get_data():
+    return bus.read_i2c_block_data(addr, 0);
+
+def get_float(data, index):
+    bytes = data[4*index:(index+1)*4]
+    return struct.unpack('f', "".join(map(chr, bytes)))[0]
 
 print("Entre com a movimentacao")
 while numb ==1:
@@ -23,4 +21,8 @@ while numb ==1:
     n3 = input(">>>>   ")
     x = [n1,n2,n3]
     bus.write_i2c_block_data(addr,0 ,x)
-    RequisitaDadosArduino()
+    sleep(0.2)
+    data = get_data()
+    print(get_float(data, 0))
+    print(get_float(data, 1))
+    print(get_float(data, 2))
