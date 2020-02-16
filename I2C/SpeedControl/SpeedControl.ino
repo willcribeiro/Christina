@@ -25,8 +25,10 @@ float X = 0;
 float Y = 0;
 float teta = 0;
 int B = 40;
-int VR1 = 36, VR2 = 36; //Velocidade padrão das rodas
+int WD = 36, WE = 36; //Velocidade padrão das rodas
 char str[15];
+int Vk,Wk;
+int T;
 
 void travel(int comando[2]) { //controll the position
   int numero, rotacao;
@@ -82,8 +84,8 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(0b01000000);
       Serial.write(x);
       Serial.write(y);
-      VR1 = abs(numero[1]);
-      VR2 = VR1;
+      WD = abs(numero[1]);
+      WE = WD;
 
       int movimento[2] = {9, 18};
       odometria(movimento[1], movimento[1]);
@@ -94,7 +96,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(x);
       Serial.write(y);
       //Para que ambas as rodas terminem iguais
-      VR1 = abs(numero[1]);
+      WD = abs(numero[1]);
       convert(1);
 
     }
@@ -103,7 +105,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(x);
       Serial.write(y);
       //Para que ambas as rodas terminem iguais
-      VR2 = abs(numero[1]);
+      WE = abs(numero[1]);
       convert(1);
 
     }
@@ -123,7 +125,7 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(x);
       Serial.write(y);
 
-      VR1 = abs(numero[1]);
+      WD = abs(numero[1]);
       convert(-1);
     }
     if (numero[0] == 2) {
@@ -131,17 +133,19 @@ void SpeedMax(int numero[2]) {  //Controll the speed
       Serial.write(x);
       Serial.write(y);
 
-      VR2 = abs(numero[1]);
+      WE = abs(numero[1]);
       convert(-1);
     }
   }
-
 }
 
 int odometria(int ND, int NE) {
-  X = X + (RD * ND + RE * NE) * (Pi / CE) * cos(teta);
-  Y = Y + (RD * ND + RE * NE) * (Pi / CE) * sin(teta);
-  teta = teta + (RD * ND - RE * NE) * (2 * Pi / CE) / B;
+  Vk = (RD/2)*WD + (RE/2)*WE;  //Vel linear
+  Wk = (RD/B)*WD - (RE/B)*WE; //Vel angular
+  
+  X = X + T*cos(teta)*Vk;
+  Y = Y + T*sin(teta)*Vk;
+  teta = teta + Wk*T;
 }
 
 void requestEvent() {
@@ -158,7 +162,7 @@ void convert(int sinal) {
     pulso = -pulso;
   int aux;
   // W1/W2 * X2 = X1
-  aux  = (VR1 / VR2) * pulso;
+  aux  = (WD / WE) * pulso;
   int movimento[2] = {1, aux};
   travel(movimento);
   int movimento2[2] = {2, pulso};
@@ -194,5 +198,3 @@ void receiveEvent(int howMany) {
 void loop() {
   delay(100);
 }
-
-
