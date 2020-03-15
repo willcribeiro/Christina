@@ -1,16 +1,5 @@
 #include <Wire.h>
-//Instrucao de Querry
-int QPOS = 0b00001;
-int QSPD = 0b00010;
-int CHFA = 0b00011;
-//Instrucao de acao
-int TRVL = 0b00100;
-int CLRP = 0b00101;
-//Instrucao de conf
-int SREV = 0b00110;
-int STXD = 0b00111;
-int SMAX = 0b01000;
-int SSRR = 0b01001;
+
 //Motores
 int motor1 = 0b100;
 int motor2 = 0b010;
@@ -28,7 +17,7 @@ int B = 40;
 int WD = 36, WE = 36; //Velocidade padrão das rodas
 char str[15];
 int Vk,Wk;
-int T;
+float T = 0.08;
 
 void travel(int comando[2]) { //controll the position
   int numero, rotacao;
@@ -140,12 +129,15 @@ void SpeedMax(int numero[2]) {  //Controll the speed
 }
 
 int odometria(int ND, int NE) {
+
+
   Vk = (RD/2)*WD + (RE/2)*WE;  //Vel linear
   Wk = (RD/B)*WD - (RE/B)*WE; //Vel angular
   
   X = X + T*cos(teta)*Vk;
   Y = Y + T*sin(teta)*Vk;
   teta = teta + Wk*T;
+
 }
 
 void requestEvent() {
